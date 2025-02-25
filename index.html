@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Quality Issues Dashboard</title>
+    <link rel="stylesheet" href="assets/dhtmlxgantt.css">
+    <script src="assets/dhtmlxgantt.js"></script>
+    <style>
+        /* General Page Styling */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Header Styling */
+        .header {
+            text-align: center;
+            padding: 20px;
+            background-color: #8a1e47; /* Requested Color */
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Centered Logo */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            width: fit-content;
+            margin: 10px auto; /* Center horizontally */
+        }
+
+        .logo-container img {
+            height: 60px;
+            width: auto;
+        }
+
+        /* Gantt Chart Container */
+        #gantt_here {
+            width: 90%;
+            height: 700px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            margin: 20px auto;
+        }
+
+
+
+        /* Task Styling Based on Priority */
+        .blocking { background-color: #e74c3c !important; color: white; } /* Red */
+        .critical { background-color: #e67e22 !important; color: white; } /* Orange */
+        .urgent { background-color: #f1c40f !important; color: black; } /* Yellow */
+        .normal { background-color: #3498db !important; color: white; } /* Blue */
+        .minor { background-color: #2ecc71 !important; color: white; } /* Green */
+
+        /* Legend */
+        .legend-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .legend {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 5px;
+            margin: 5px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .blocking-legend { background-color: #e74c3c; }
+        .critical-legend { background-color: #e67e22; }
+        .urgent-legend { background-color: #f1c40f; color: black; }
+        .normal-legend { background-color: #3498db; }
+        .minor-legend { background-color: #2ecc71; }
+
+        /* Adjusting Gantt Table Layout */
+        .gantt_grid_head_cell, .gantt_grid_data .gantt_cell {
+            font-size: 14px;
+        }
+
+        /* Increase task name column width */
+        .gantt_grid_head_cell:first-child, .gantt_grid_data .gantt_cell:first-child {
+            width: 300px !important; /* Increase space for task names */
+            white-space: normal !important;
+        }
+
+        /* Hide the duration column */
+        .gantt_grid_head_cell:nth-child(3), .gantt_grid_data .gantt_cell:nth-child(3) {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">📊 Data Quality Issues Dashboard</div>
+
+    <!-- Logo -->
+    <div class="logo-container">
+        <img src="assets/Bendigo_Logo.png" alt="Collibra Logo">
+    </div>
+
+
+</h3>
+    <!-- Legend for Priority Levels -->
+    <div class="legend-container">
+        <span class="legend blocking-legend">Blocking</span>
+        <span class="legend critical-legend">Critical</span>
+        <span class="legend urgent-legend">Urgent</span>
+        <span class="legend normal-legend">Normal</span>
+        <span class="legend minor-legend">Minor</span>
+    </div>
+
+    <div id="gantt_here"></div>
+
+    <script>
+        window.onload = function() {
+            gantt.config.xml_date = "%d-%m-%Y";
+            gantt.config.readonly = true; // Disable task adding/editing
+            gantt.plugins({ tooltip: true });
+
+            // Rename Task Name column to "Data Issues" and hide "Start Time"
+            gantt.config.columns = [
+                { name: "text", label: "📌 Data Issues", tree: true, width: 300 }, // Increased space for task names
+                // { name: "start_date", label: "Start Time", align: "center", width: 100 }, // Hidden
+                // { name: "duration", label: "Duration", align: "center", width: 80, hide: true } // Hide Duration column
+            ];
+
+
+            gantt.templates.tooltip_text = function(start, end, task) {
+                return `
+                    <b>Description:</b> ${task.description}<br>
+                    <b>Issue Classification:</b> ${task.classification}<br>
+                    <b>Priority:</b> ${task.priority}<br>
+                    <b>Status:</b> ${task.status}<br>
+                    <b>Impacted Asset:</b> ${task.impacted_asset}<br>
+                    <b>Issue Created Date:</b> ${gantt.templates.task_date(start)}<br>
+                `;
+            };
+
+            gantt.templates.task_class = function(start, end, task) {
+                if (task.priority === "Blocking") return "blocking";
+                if (task.priority === "Critical") return "critical";
+                if (task.priority === "Urgent") return "urgent";
+                if (task.priority === "Normal") return "normal";
+                if (task.priority === "Minor") return "minor";
+                return "";
+            };
+
+            gantt.init("gantt_here");
+
+            gantt.parse({
+                data: [
+                { id: 1, text: "Incorrect Customer Birth Dates", start_date: "02-03-2024", duration: 5, progress: 0.3, status: "Pending", priority: "Critical", classification: "Accuracy", impacted_asset: "Customer Records", description: "Multiple customers have incorrect birth dates leading to compliance issues." },
+        { id: 2, text: "Misaligned Currency Exchange Rates", start_date: "02-03-2024", duration: 5, progress: 0.1, status: "Pending", priority: "Blocking", classification: "Accuracy", impacted_asset: "Financial Transactions", description: "Some currency conversions are outdated, affecting financial calculations." },
+        { id: 3, text: "Invalid Email Formats", start_date: "03-03-2024", duration: 5, progress: 0.2, status: "Pending", priority: "Normal", classification: "Conformity", impacted_asset: "User Profiles", description: "Some email addresses have missing '@' symbols or invalid domains." },
+        { id: 4, text: "Duplicate Payment Transactions", start_date: "04-03-2024", duration: 5, progress: 0.4, status: "Under Review", priority: "Urgent", classification: "Consistency", impacted_asset: "Finance Database", description: "Duplicate transactions detected for multiple customers." },
+        { id: 5, text: "Missing Customer Email Addresses", start_date: "04-03-2024", duration: 5, progress: 0.5, status: "Pending", priority: "Normal", classification: "Completeness", impacted_asset: "User Profiles", description: "Several users lack email addresses, impacting notifications." },
+        { id: 6, text: "Incomplete Order Records", start_date: "06-03-2024", duration: 5, progress: 0.2, status: "Pending", priority: "Urgent", classification: "Completeness", impacted_asset: "Order Management", description: "Some order records are missing key details like payment status." },
+        { id: 7, text: "Duplicate Customer Records", start_date: "08-03-2024", duration: 5, progress: 0.3, status: "Under Review", priority: "Blocking", classification: "Consistency", impacted_asset: "Customer Database", description: "Multiple instances of the same customer exist in the database." },
+        { id: 8, text: "Delayed Shipment Data", start_date: "09-03-2024", duration: 5, progress: 0.6, status: "Pending", priority: "Critical", classification: "Timeliness", impacted_asset: "Logistics", description: "Shipment tracking data is not updated in real time." },
+        { id: 9, text: "Inconsistent Product Pricing", start_date: "11-03-2024", duration: 5, progress: 0.2, status: "Pending", priority: "Minor", classification: "Consistency", impacted_asset: "E-Commerce Database", description: "Different prices are displayed for the same product across platforms." },
+        { id: 10, text: "Missing Address Information", start_date: "12-03-2024", duration: 5, progress: 0.7, status: "Pending", priority: "Normal", classification: "Completeness", impacted_asset: "Customer Records", description: "Several customers have missing addresses in their profiles." },
+        { id: 11, text: "Outdated Product Catalog Data", start_date: "13-03-2024", duration: 5, progress: 0.4, status: "Pending", priority: "Critical", classification: "Timeliness", impacted_asset: "E-Commerce Database", description: "Some product listings contain outdated descriptions and prices." },
+        { id: 12, text: "Mismatched Inventory Counts", start_date: "15-03-2024", duration: 5, progress: 0.2, status: "Pending", priority: "Urgent", classification: "Accuracy", impacted_asset: "Inventory Management", description: "Stock levels do not match between system records and warehouse counts." },
+        { id: 13, text: "Duplicate Supplier Records", start_date: "17-03-2024", duration: 5, progress: 0.5, status: "Pending", priority: "Blocking", classification: "Consistency", impacted_asset: "Vendor Database", description: "Multiple entries exist for the same suppliers with different IDs." },
+        { id: 14, text: "Incorrect Product Weights", start_date: "18-03-2024", duration: 5, progress: 0.3, status: "Pending", priority: "Normal", classification: "Accuracy", impacted_asset: "Logistics", description: "Product weights are incorrect, affecting shipping cost calculations." },
+        { id: 15, text: "Unverified Vendor Contact Details", start_date: "19-03-2024", duration: 5, progress: 0.4, status: "Pending", priority: "Urgent", classification: "Conformity", impacted_asset: "Vendor Database", description: "Contact numbers and emails for some vendors are unverified." },
+        { id: 16, text: "Payment Processing Delays", start_date: "21-03-2024", duration: 5, progress: 0.2, status: "Pending", priority: "Critical", classification: "Timeliness", impacted_asset: "Finance System", description: "Payments are taking longer than usual to be processed." },
+        { id: 17, text: "Misclassified Transactions", start_date: "23-03-2024", duration: 5, progress: 0.5, status: "Pending", priority: "Normal", classification: "Accuracy", impacted_asset: "Finance System", description: "Transactions are categorized incorrectly in reports." },
+        { id: 18, text: "Discrepancy in Customer Rewards Data", start_date: "24-03-2024", duration: 5, progress: 0.3, status: "Pending", priority: "Urgent", classification: "Completeness", impacted_asset: "Loyalty Program", description: "Customer reward points do not match transactions." }]
+            });
+        };
+    </script>
+
+</body>
+</html>
